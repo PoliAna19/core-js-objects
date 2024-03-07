@@ -380,32 +380,126 @@ function group(array, keySelector, valueSelector) {
  */
 
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  cssSelector: '',
+  elementCount: 0,
+  idCount: 0,
+  pseudoElementCount: 0,
+  previousSelectorID: 0,
+
+  element(value) {
+    if (this.elementCount !== 0) {
+      throw new Error(
+        `Element, id and pseudo-element should not occur more then one time inside the selector`
+      );
+    }
+
+    if (this.previousSelectorID > 0) {
+      throw new Error(
+        `Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element`
+      );
+    }
+
+    const target = {};
+    const obj = Object.assign(target, this);
+    obj.cssSelector = `${this.cssSelector}${value}`;
+    obj.elementCount = 1;
+    obj.previousSelectorID = 1;
+    return obj;
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  id(value) {
+    if (this.idCount !== 0) {
+      throw new Error(
+        `Element, id and pseudo-element should not occur more then one time inside the selector`
+      );
+    }
+
+    if (this.previousSelectorID > 1) {
+      throw new Error(
+        `Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element`
+      );
+    }
+
+    const target = {};
+    const obj = Object.assign(target, this);
+    obj.cssSelector = `${this.cssSelector}#${value}`;
+    obj.idCount = 1;
+    obj.previousSelectorID = 2;
+    return obj;
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    if (this.previousSelectorID > 3) {
+      throw new Error(
+        `Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element`
+      );
+    }
+
+    const target = {};
+    const obj = Object.assign(target, this);
+    obj.cssSelector = `${this.cssSelector}.${value}`;
+    obj.previousSelectorID = 3;
+    return obj;
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    if (this.previousSelectorID > 4) {
+      throw new Error(
+        `Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element`
+      );
+    }
+
+    const target = {};
+    const obj = Object.assign(target, this);
+    obj.cssSelector = `${this.cssSelector}[${value}]`;
+    obj.previousSelectorID = 4;
+    return obj;
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    if (this.previousSelectorID > 5) {
+      throw new Error(
+        `Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element`
+      );
+    }
+
+    const target = {};
+    const obj = Object.assign(target, this);
+    obj.cssSelector = `${this.cssSelector}:${value}`;
+    obj.previousSelectorID = 5;
+    return obj;
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoElement(value) {
+    if (this.pseudoElementCount !== 0) {
+      throw new Error(
+        `Element, id and pseudo-element should not occur more then one time inside the selector`
+      );
+    }
+
+    if (this.previousSelectorID > 5) {
+      throw new Error(
+        `Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element`
+      );
+    }
+
+    const target = {};
+    const obj = Object.assign(target, this);
+    obj.cssSelector = `${this.cssSelector}::${value}`;
+    obj.pseudoElementCount = 1;
+    obj.previousSelectorID = 6;
+    return obj;
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  combine(selector1, combinator, selector2) {
+    const target = {};
+    const obj = Object.assign(target, this);
+    obj.cssSelector = `${selector1.cssSelector} ${combinator} ${selector2.cssSelector}`;
+    return obj;
+  },
+
+  stringify() {
+    return this.cssSelector;
   },
 };
 
